@@ -372,7 +372,7 @@ class LaserTiming(FltMvInterface, PVPositioner):
         '''
         self.user_offset.put(0.0)
         current_setpoint = self.setpoint.get()  # Get the current setpoint
-        new_offset = position - self.setpoint.get()
+        new_offset = position - current_setpoint
         self.user_offset.put(new_offset)
 
         # Update the notepad readback to reflect the new position
