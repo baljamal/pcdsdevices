@@ -1,4 +1,4 @@
-1383 reflaser-shutdown-cpt
+1406 HE-LODCM
 #################
 
 API Breaks
@@ -11,15 +11,15 @@ Library Features
 
 Device Features
 ---------------
-- Added component to ReflaserL2SI for laser shutdown pv
+- N/A
 
 New Devices
 -----------
-- N/A
+- HE_LODCM - 16 axes, 2 lakeshores, and an energy pseudopositioner
 
 Bugfixes
 --------
-- N/A
+- Fixing mode and units pvs for Lakeshore336
 
 Maintenance
 -----------

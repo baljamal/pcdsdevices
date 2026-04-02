@@ -1,4 +1,4 @@
-1391 SL2K4 Slit GUI Label Fix
+1407 mrco_endstation_update
 #################
 
 API Breaks
@@ -11,7 +11,7 @@ Library Features
 
 Device Features
 ---------------
-- N/A
+- Added the virtual motors for rotation axes of the mrco sample paddle
 
 New Devices
 -----------
@@ -19,12 +19,12 @@ New Devices
 
 Bugfixes
 --------
-- Labels no longer clip in control room screens
+- N/A
 
 Maintenance
 -----------
-- Added labels for North/South and Top/Bottom
+- N/A
 
 Contributors
 ------------
-- tparas
+- kdborne

@@ -15,7 +15,7 @@ from .beam_stats import BeamEnergyRequest
 from .device import GroupDevice
 from .device import UpdateComponent as UpCpt
 from .epics_motor import BeckhoffAxis
-from .interface import BaseInterface, FltMvInterface
+from .interface import BaseInterface, FltMvInterface, LightpathInOutCptMixin
 from .pmps import TwinCATStatePMPS
 from .pseudopos import (PseudoPositioner, PseudoSingleInterface,
                         pseudo_position_argument, real_position_argument)
@@ -308,7 +308,7 @@ class DCCMTarget(TwinCATStatePMPS):
     _in_if_not_out = True
 
 
-class DCCM(BaseInterface, GroupDevice):
+class DCCM(BaseInterface, GroupDevice, LightpathInOutCptMixin):
     """
     The full DCCM assembly.
 
@@ -368,6 +368,8 @@ class DCCM(BaseInterface, GroupDevice):
     txd = Cpt(BeckhoffAxis, ":MMS:TXD", doc="YAG Diagnostic X Axis", kind="normal")
     tyd = Cpt(BeckhoffAxis, ":MMS:TYD", doc="YAG Diagnostic Y Axis", kind="normal")
 
+    lightpath_cpts = ['tx_state']
+
     def __init__(
             self,
             prefix: str = "SP1L0:DCCM",
@@ -380,3 +382,29 @@ class DCCM(BaseInterface, GroupDevice):
         self.acr_status_suffix = acr_status_suffix
         self.acr_status_pv_index = acr_status_pv_index
         super().__init__(prefix, **kwargs)
+
+
+    def _proxy_method(method_name):  # noqa
+        """
+        Proxy a method from tx_state
+        """
+        def method_selector(self, *args, **kwargs):
+            return getattr(self.tx_state, method_name)(*args, **kwargs)
+
+        return method_selector
+
+
+    def _proxy_property(prop_name):  # noqa
+        """Read-only property proxy for tx_state"""
+        def getter(self):
+            return getattr(self.tx_state, prop_name)
+
+        # Only support read-only properties for now.
+        return property(getter)
+
+    inserted = _proxy_property('inserted')
+    check_inserted = _proxy_method('check_inserted')
+    removed = _proxy_property('removed')
+    check_removed = _proxy_method('check_removed')
+    insert = _proxy_method('insert')
+    remove = _proxy_method('remove')
