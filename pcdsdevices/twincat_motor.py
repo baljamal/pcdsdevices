@@ -6,6 +6,7 @@ from ophyd.device import Component as Cpt
 from ophyd.device import required_for_connection
 from ophyd.pv_positioner import PVPositioner
 from ophyd.signal import DerivedSignal, EpicsSignal
+from ophyd.sim import FakeEpicsSignalRO, fake_device_cache
 from ophyd.status import MoveStatus
 from ophyd.status import wait as status_wait
 from ophyd.utils.epics_pvs import (AlarmSeverity, fmt_time,
@@ -26,6 +27,9 @@ class InvertedBoolEpicsSignal(DerivedSignal):
     def inverse(self, value: bool):
         """Convert motor limit enable to switch state: it's the inverse."""
         return not value
+
+
+fake_device_cache[InvertedBoolEpicsSignal] = FakeEpicsSignalRO
 
 
 class TwinCATMotorInterface(FltMvInterface, PVPositioner):
