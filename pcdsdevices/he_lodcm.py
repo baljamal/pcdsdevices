@@ -16,7 +16,7 @@ from .utils import get_status_float, get_status_value
 @dataclass(frozen=True)
 class Crystal:
     name: str
-    d_spacing: float
+    d_spacing: float  # m
     t1ty_range: tuple[float, float]
     t2ty_range: tuple[float, float]
 
@@ -24,9 +24,9 @@ class Crystal:
 SI111 = Crystal("Si111", 3.1355e-7, t1ty_range=(0.1, 15), t2ty_range=(0.1, 15))
 SI220 = Crystal("Si220", 1.9201e-7, t1ty_range=(-15, -0.1), t2ty_range=(-15, -0.1))
 
-GRATING_DISTANCE = 30e3  # distance of the grating to the center of rotation of crystal 1 in meters.
+GRATING_DISTANCE = 28.6e3  # distance of the grating to the center of rotation of crystal 1 in meters.
 IM2L0_DISTANCE = 7.3e3  # distance of iml2 from the center of rotation of crystal 1 in meters.
-GAP = 600.0  # horizontal gap between the two crystals in mm.
+GAP = 599.0  # horizontal gap between the two crystals in mm.
 
 
 class HE_LODCMEnergy(FltMvInterface, PseudoPositioner):
@@ -50,11 +50,26 @@ class HE_LODCMEnergy(FltMvInterface, PseudoPositioner):
     t2ty1 = Cpt(BeckhoffAxis, ':MMS:T2Ty', kind='normal', doc='Tower 2 translation Y 1')
     t2ty2 = Cpt(BeckhoffAxis, ':MMS:T2Ty2', kind='normal', doc='Tower 2 translation Y 2')
 
+    tab_component_names = True
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.grating_period = None  # grating perdiod in mm.
+        self.grating_period = None  # grating perdiod in mm. Proper implementation to follow
 
     def get_crystal(self) -> Crystal:
+        """
+        Get the current crystal type from tower vertical positions.
+
+        Returns
+        -------
+        Crystal
+            SI111 or SI220 based on t1ty and t2ty readbacks.
+
+        Raises
+        ------
+        RuntimeError
+            If t1ty/t2ty positions are invalid or crystal types mismatch.
+        """
         rbv_t1ty = self.t1ty.user_readback.get()
         rbv_t2ty1 = self.t2ty1.user_readback.get()
         rbv_t2ty2 = self.t2ty2.user_readback.get()
@@ -80,6 +95,21 @@ class HE_LODCMEnergy(FltMvInterface, PseudoPositioner):
         return t1_crystal
 
     def _energy_from_theta(self, theta_deg: float, crystal: Crystal) -> float:
+        """
+        Calculate energy from Bragg angle.
+
+        Parameters
+        ----------
+        theta_deg : float
+            Bragg angle in degrees.
+        crystal : Crystal
+            Crystal object with d-spacing.
+
+        Returns
+        -------
+        float
+            Energy in keV.
+        """
         theta_rad = np.deg2rad(theta_deg)
 
         if self.grating_period is not None:
@@ -94,6 +124,19 @@ class HE_LODCMEnergy(FltMvInterface, PseudoPositioner):
         return energy_keV
 
     def _pos_from_energy(self, energy: float) -> tuple[float, float]:
+        """
+        Calculate motor positions from target energy.
+
+        Parameters
+        ----------
+        energy : float
+            Target energy in keV (4-25).
+
+        Returns
+        -------
+        tuple[float, float]
+            Tuple of (theta_degrees, t2tz_position).
+        """
         crystal = self.get_crystal()
 
         wavelength_mm = (1.2398 / energy) * 1e-6
@@ -120,12 +163,33 @@ class HE_LODCMEnergy(FltMvInterface, PseudoPositioner):
 
     @classmethod
     def _get_real_positioners(cls) -> list:
+        """
+        Override to exclude crystal detection motors.
+
+        Returns
+        -------
+        list
+            List of (attr, cpt) tuples excluding t1ty, t2ty1, t2ty2.
+        """
         exclude = {'t1ty', 't2ty1', 't2ty2'}
         return [(attr, cpt) for attr, cpt in super()._get_real_positioners()
                 if attr not in exclude]
 
     @pseudo_position_argument
     def forward(self, pseudo_pos: Any) -> Any:
+        """
+        Convert energy to motor positions.
+
+        Parameters
+        ----------
+        pseudo_pos : PseudoPosition
+            With .energy attribute.
+
+        Returns
+        -------
+        RealPosition
+            With t1ry, t2ry, t2tz attributes.
+        """
         pseudo_pos = self.PseudoPosition(*pseudo_pos)
         th, t2tz = self._pos_from_energy(energy=pseudo_pos.energy)
 
@@ -135,6 +199,19 @@ class HE_LODCMEnergy(FltMvInterface, PseudoPositioner):
 
     @real_position_argument
     def inverse(self, real_pos: Any) -> Any:
+        """
+        Convert motor positions to energy.
+
+        Parameters
+        ----------
+        real_pos : RealPosition
+            With .t1ry attribute.
+
+        Returns
+        -------
+        PseudoPosition
+            With .energy attribute, or NaN if crystal detection fails.
+        """
         try:
             crystal = self.get_crystal()
         except Exception:
@@ -173,7 +250,28 @@ class HE_LODCM(BaseInterface, GroupDevice):
     tct1 = Cpt(Lakeshore336, ':TCT:01', kind='normal', doc='Crystal 1 temperature controller')
     tct2 = Cpt(Lakeshore336, ':TCT:02', kind='normal', doc='Crystal 2 temperature controller')
 
+    tab_component_names = True
+
+    def __init__(self, prefix, *args, **kwargs):
+        super().__init__(prefix=prefix, *args, **kwargs)
+
+        # Aliases
+        self.E = self.energy.energy
+
     def format_status_info(self, status_info):
+        """
+        Format status info for display.
+
+        Parameters
+        ----------
+        status_info : dict
+            Nested dictionary with motor/channel status data.
+
+        Returns
+        -------
+        str
+            Formatted multi-line status string.
+        """
         energy = get_status_float(status_info, 'energy', 'value')
 
         def motor_status(attr, status_info):
