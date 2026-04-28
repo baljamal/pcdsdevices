@@ -1,4 +1,4 @@
-1375 sl2k4-colors
+1406 HE-LODCM
 #################
 
 API Breaks
@@ -15,11 +15,11 @@ Device Features
 
 New Devices
 -----------
-- N/A
+- HE_LODCM - 16 axes, 2 lakeshores, and an energy pseudopositioner
 
 Bugfixes
 --------
-- Swapped indicator and background colors for slits in SL2K4Slits.ui
+- Fixing mode and units pvs for Lakeshore336
 
 Maintenance
 -----------

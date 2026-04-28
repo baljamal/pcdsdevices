@@ -1,5 +1,5 @@
-1378 modify dream_motion
-#################
+1413 fix_twincat_motor_misc
+###########################
 
 API Breaks
 ----------
@@ -11,7 +11,7 @@ Library Features
 
 Device Features
 ---------------
-- add tab component name and modify gas jet x and z name
+- N/A
 
 New Devices
 -----------
@@ -19,7 +19,8 @@ New Devices
 
 Bugfixes
 --------
-- N/A
+- Fix polarity of twincat motor limit switches
+- For twincat motor, switch EGU units PV to correct value
 
 Maintenance
 -----------
@@ -27,4 +28,5 @@ Maintenance
 
 Contributors
 ------------
-- tongju12
+- zllentz
+- yannS2016

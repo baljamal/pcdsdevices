@@ -1,4 +1,4 @@
-1379 more-lxt-offsets
+1414 he_lodcm_energy
 #################
 
 API Breaks
@@ -11,7 +11,7 @@ Library Features
 
 Device Features
 ---------------
-- Added instrument argument to Lcls2LaserTiming which is added to user_offset PV if defined
+- Add energy calculation to he_lodcm
 
 New Devices
 -----------
@@ -27,4 +27,4 @@ Maintenance
 
 Contributors
 ------------
-- KaushikMalapati
+- Vincent Esposito

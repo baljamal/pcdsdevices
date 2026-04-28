@@ -1,4 +1,4 @@
-1373 ipm-w8-prefix
+1407 mrco_endstation_update
 #################
 
 API Breaks
@@ -11,7 +11,7 @@ Library Features
 
 Device Features
 ---------------
-- N/A
+- Added the virtual motors for rotation axes of the mrco sample paddle
 
 New Devices
 -----------
@@ -19,7 +19,7 @@ New Devices
 
 Bugfixes
 --------
-- Added prefix for wave8 component of BeckhoffIntensityProfileTarget so PVs connect
+- N/A
 
 Maintenance
 -----------
@@ -27,4 +27,4 @@ Maintenance
 
 Contributors
 ------------
-- KaushikMalapati
+- kdborne
